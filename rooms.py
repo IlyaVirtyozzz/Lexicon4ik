@@ -1,10 +1,9 @@
 from helper import read_json
-from constants import db, data
-from database import add_new_vocline, Line_Vocabulary_words
+from constants import data
 import random
 
 
-class Antonym():
+class Antonyms():
     def __init__(self):
         self.words = None
 
@@ -17,7 +16,7 @@ class Antonym():
         values = words[list(words.keys())[0]]
 
 
-class Paronym():
+class Paronyms():
     def __init__(self):
         self.words = None
 
@@ -30,7 +29,7 @@ class Paronym():
         values = words[list(words.keys())[0]]
 
 
-class Phraseologism():
+class Phraseologisms():
     def __init__(self):
         self.words = None
 
@@ -43,7 +42,7 @@ class Phraseologism():
         values = words[list(words.keys())[0]]
 
 
-class Buzzword():
+class Buzzwords():
     def __init__(self):
         self.words = None
 
@@ -82,7 +81,6 @@ class Vocabulary_words():
 
     def create(self):
         self.if_first_time()
-
 
     def edit_the_view(self, words):
         letter = ""
