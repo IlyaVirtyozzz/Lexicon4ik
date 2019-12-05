@@ -24,7 +24,7 @@ for file in os.listdir(path=dir_name):
                       )
 
     id = a.json()["image"]["id"]
-    for i in data["buzzwords"]:
+    for i in data["phraseologisms"]:
         if list(i.keys())[0] == file[:file.find(".")]:
             i["id"] = id
 

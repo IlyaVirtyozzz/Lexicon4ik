@@ -46,7 +46,7 @@ class Main_class():
         if self.check_help():
             self.res['response']['text'] = dialogues_info["helps"]
             return
-        if self.user["passage_num"] == 0:
+        elif self.user["passage_num"] == 0:
             if self.req['request']["command"].strip().lower() in dialogues_info["structure"]["main_menu"]:
                 self.user["passage_num"] = dialogues_info["structure"]["main_menu"].index(
                     self.req['request']["command"].strip().lower()) + 1
