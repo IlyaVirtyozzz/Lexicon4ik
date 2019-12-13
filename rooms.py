@@ -14,9 +14,10 @@ class Antonyms():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-            if self.req['request']["command"].strip().lower() == "помощь":
+            if command == "помощь":
                 self.res['response']['text'] = dialogues_info["helps"]["antonyms"]['menu']
                 self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
             elif command in dialogues_info['structure']["antonyms"]:
                 ind = dialogues_info['structure']["antonyms"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["antonyms"]):
@@ -30,11 +31,15 @@ class Antonyms():
                     if self.user['room_num'] == 1:
                         return self.get_res()
                     else:
-                        return self.get_test_res()
+                        return self.get_test_res(0)
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["antonyms"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -49,7 +54,11 @@ class Antonyms():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 2:
-            if command == "в главное меню":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["antonyms"]['test']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "в главное меню":
                 self.user["passage_num"] = 0
                 self.user["room_num"] = 0
                 self.user['antonyms']['antonyms_test_step_num'] = 0
@@ -59,12 +68,12 @@ class Antonyms():
                 self.user["room_num"] = 0
                 self.user['antonyms']['antonyms_test_step_num'] = 0
                 return self.get_menu()
-            elif command in "не хочу":
-                return self.get_test_res()
+            elif command == "не могу отгадать":
+                return self.get_test_res(1)
             elif command in self.user["antonyms"]['previous_test_list']:
-                return self.get_test_res(True)
+                return self.get_test_res(2)
             else:
-                return self.get_test_res(False)
+                return self.get_test_res(3)
 
     def get_incomprehension(self):
         self.res['response']['text'] = random.choice(dialogues_info["incomprehension"])
@@ -78,15 +87,21 @@ class Antonyms():
             self.user["antonyms"]['list'] = words
         self.user['antonyms']['antonyms_step_num'] += 1
         element = self.user["antonyms"]['list'].pop(0)
-        text = "{}:\n".format(list(element.keys())[0])
-        for i in element[list(element.keys())[0]]:
-            text += i + "\n"
+
+        if len(element[list(element.keys())[0]]) > 1:
+            text = ""
+            for i in element[list(element.keys())[0]]:
+                text += "•" + i.capitalize() + "\n"
+            text = random.choice(dialogues_info["аntonyms_learn"]["many"]).format(list(element.keys())[0], text)
+        else:
+            text = random.choice(dialogues_info["аntonyms_learn"]["one"]).format(list(element.keys())[0],
+                                                                                 element[list(element.keys())[0]][0])
         self.res['response']['text'] = text
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[1]
         return self.res
 
-    def get_test_res(self, answer=None):
-        def func():
+    def get_test_res(self, answer=0):
+        def func(dont_know=False):
             if len(self.user["antonyms"]['test_list']) == 0:
                 words = data["antonyms"][:]
                 random.shuffle(words)
@@ -94,21 +109,31 @@ class Antonyms():
             self.user['antonyms']['antonyms_test_step_num'] += 1
             element = self.user["antonyms"]['test_list'].pop(0)
             variants = element[list(element.keys())[0]]
-            text = list(element.keys())[0]
+            text = random.choice(dialogues_info["antonyms_test"]).format(list(element.keys())[0])
+            if dont_know:
+                previous = 'Правильные варианты ответов:\n'
+                for i in self.user["antonyms"]['previous_test_list']:
+                    previous += "•" + i.capitalize() + '\n'
+                text = previous + "\n" + text
+
             self.user["antonyms"]['previous_test_list'] = list(map(lambda x: x.lower(), variants))
             return text
 
-        if answer is None:
+        if answer == 0:
             text = func()
             self.res['response']['text'] = text
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
-        elif answer:
+        elif answer == 1:
+            text = func(True)
+            self.res['response']['text'] = text
+            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        elif answer == 2:
             text = func()
-            self.res['response']['text'] = "Правильно" + text
+            self.res['response']['text'] = random.choice(dialogues_info['its_true']) + "\n\n" + text
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         else:
-            self.res['response']['text'] = "ещё варианты"
-            self.user["previous_buttons"] = self.res['response']['buttons'] = [{"title": "Не хочу",
+            self.res['response']['text'] = random.choice(dialogues_info["more_options"])
+            self.user["previous_buttons"] = self.res['response']['buttons'] = [{"title": "Не могу отгадать",
                                                                                 "hide": True}, {
                                                                                    "title": "В главное меню",
                                                                                    "hide": True
@@ -134,7 +159,11 @@ class Paronyms():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-            if command in dialogues_info['structure']["paronyms"]:
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["paronyms"]['menu']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command in dialogues_info['structure']["paronyms"]:
                 ind = dialogues_info['structure']["paronyms"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["paronyms"]):
                     self.user["passage_num"] = 0
@@ -147,11 +176,15 @@ class Paronyms():
                     if self.user['room_num'] == 1:
                         return self.get_res()
                     else:
-                        return self.get_test_res()
+                        return self.get_test_res(0)
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["paronyms"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -166,7 +199,11 @@ class Paronyms():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 2:
-            if command == "в главное меню":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["paronyms"]['test']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "в главное меню":
                 self.user["passage_num"] = 0
                 self.user["room_num"] = 0
                 self.user['paronyms']['paronyms_test_step_num'] = 0
@@ -176,12 +213,12 @@ class Paronyms():
                 self.user["room_num"] = 0
                 self.user['paronyms']['paronyms_test_step_num'] = 0
                 return self.get_menu()
-            elif command in "не хочу":
-                return self.get_test_res()
+            elif command == "не могу отгадать":
+                return self.get_test_res(1)
             elif command in self.user["paronyms"]['previous_test_list']:
-                return self.get_test_res(True)
+                return self.get_test_res(2)
             else:
-                return self.get_test_res(False)
+                return self.get_test_res(3)
 
     def get_incomprehension(self):
         self.res['response']['text'] = random.choice(dialogues_info["incomprehension"])
@@ -195,15 +232,16 @@ class Paronyms():
             self.user["paronyms"]['list'] = words
         self.user['paronyms']['paronyms_step_num'] += 1
         element = self.user["paronyms"]['list'].pop(0)
-        text = ""
+        text = random.choice(dialogues_info["paronyms_learn"][:]) + "\n\n"
         for i in list(element.keys()):
-            text += i + " " + element[i] + "\n"
+            text += "•" + i + " — " + element[i] + "\n\n"
+
         self.res['response']['text'] = text
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[1]
         return self.res
 
-    def get_test_res(self, answer=None):
-        def func():
+    def get_test_res(self, answer=0):
+        def func(dont_know=False):
             if len(self.user["paronyms"]['test_list']) == 0:
                 words = data["paronyms"][:]
                 random.shuffle(words)
@@ -212,21 +250,30 @@ class Paronyms():
             element = self.user["paronyms"]['test_list'].pop(0)
             variants = list(element.keys())
             random.shuffle(variants)
-            text = variants.pop(0)
+            text = random.choice(dialogues_info["paronyms_test"]).format(variants.pop(0))
+            if dont_know:
+                previous = 'Правильные варианты ответов:\n'
+                for i in self.user["paronyms"]['previous_test_list']:
+                    previous += "•" + i.capitalize() + '\n'
+                text = previous + "\n" + text
             self.user["paronyms"]['previous_test_list'] = list(map(lambda x: x.lower(), variants))
             return text
 
-        if answer is None:
+        if answer == 0:
             text = func()
             self.res['response']['text'] = text
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
-        elif answer:
+        elif answer == 1:
+            text = func(True)
+            self.res['response']['text'] = text
+            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        elif answer == 2:
             text = func()
-            self.res['response']['text'] = "Правильно" + text
+            self.res['response']['text'] = random.choice(dialogues_info['its_true']) + "\n\n" + text
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         else:
-            self.res['response']['text'] = "Может ещё варианты?"
-            self.user["previous_buttons"] = self.res['response']['buttons'] = [{"title": "Не хочу",
+            self.res['response']['text'] = random.choice(dialogues_info["more_options"])
+            self.user["previous_buttons"] = self.res['response']['buttons'] = [{"title": "Не могу отгадать",
                                                                                 "hide": True}, {
                                                                                    "title": "В главное меню",
                                                                                    "hide": True
@@ -251,7 +298,11 @@ class Phraseologisms():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-            if command in dialogues_info['structure']["phraseologisms"]:
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["phraseologisms"]['menu']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command in dialogues_info['structure']["phraseologisms"]:
                 ind = dialogues_info['structure']["phraseologisms"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["phraseologisms"]):
                     self.user["passage_num"] = 0
@@ -265,7 +316,11 @@ class Phraseologisms():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["phraseologisms"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -320,7 +375,11 @@ class Buzzwords():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-            if command in dialogues_info['structure']["buzzwords"]:
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["buzzwords"]['menu']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command in dialogues_info['structure']["buzzwords"]:
                 ind = dialogues_info['structure']["buzzwords"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["buzzwords"]):
                     self.user["passage_num"] = 0
@@ -334,7 +393,11 @@ class Buzzwords():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["buzzwords"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -387,7 +450,11 @@ class Stupid_Dictionary():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-            if command in dialogues_info['structure']["stupid_dictionary"]:
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["stupid_dictionary"]['menu']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command in dialogues_info['structure']["stupid_dictionary"]:
                 ind = dialogues_info['structure']["stupid_dictionary"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["stupid_dictionary"]):
 
@@ -403,7 +470,11 @@ class Stupid_Dictionary():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["stupid_dictionary"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -456,8 +527,11 @@ class Vocabulary_words():
     def sequence(self):
         command = self.req['request']["command"].strip().lower()
         if self.user["room_num"] == 0:
-
-            if command in dialogues_info['structure']["vocabulary_words"]:
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["vocabulary_words"]['menu']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command in dialogues_info['structure']["vocabulary_words"]:
                 ind = dialogues_info['structure']["vocabulary_words"].index(command)
                 if ind + 1 == len(dialogues_info['structure']["vocabulary_words"]):
 
@@ -472,12 +546,16 @@ class Vocabulary_words():
                     if self.user['room_num'] == 1:
                         return self.get_res()
                     else:
-                        return self.get_test_res()
+                        return self.get_test_res(0)
             else:
                 return self.get_incomprehension()
 
         elif self.user["room_num"] == 1:
-            if command == "далее":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["vocabulary_words"]['learn']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "далее":
                 return self.get_res()
             elif command == 'в меню':
                 self.user["room_num"] = 0
@@ -492,7 +570,16 @@ class Vocabulary_words():
             else:
                 return self.get_incomprehension()
         elif self.user["room_num"] == 2:
-            if command == "в главное меню":
+            if command == "помощь":
+                self.res['response']['text'] = dialogues_info["helps"]["vocabulary_words"]['test']
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "повтори":
+                self.res['response']['tts'] = self.user["vocabulary_words"]['previous_test_list'][0]
+                self.res['response']['text'] = "..."
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
+            elif command == "в главное меню":
                 self.user["passage_num"] = 0
                 self.user["room_num"] = 0
                 self.user['vocabulary_words']['vocabulary_words_test_step_num'] = 0
@@ -502,10 +589,12 @@ class Vocabulary_words():
                 self.user["room_num"] = 0
                 self.user['vocabulary_words']['vocabulary_words_test_step_num'] = 0
                 return self.get_menu()
+            elif command == "не могу отгадать":
+                return self.get_test_res(1)
             elif command in self.user["vocabulary_words"]['previous_test_list']:
-                return self.get_test_res(True)
+                return self.get_test_res(2)
             else:
-                return self.get_test_res(False)
+                return self.get_test_res(3)
 
     def get_incomprehension(self):
         self.res['response']['text'] = random.choice(dialogues_info["incomprehension"])
@@ -518,29 +607,53 @@ class Vocabulary_words():
             random.shuffle(words)
             self.user["vocabulary_words"]['list'] = words
         self.user['vocabulary_words']['vocabulary_words_step_num'] += 1
-        self.res['response']['text'] = self.user["vocabulary_words"]['list'].pop(0)
+        self.res['response']['text'] = random.choice(dialogues_info["vocabulary_learn"]).format(
+            self.user["vocabulary_words"]['list'].pop(0).capitalize())
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         return self.res
 
-    def get_test_res(self, answer=None):
-        if len(self.user["vocabulary_words"]['test_list']) == 0:
-            words = data["vocabulary_words"][:]
-            random.shuffle(words)
-            self.user["vocabulary_words"]['test_list'] = words
-        self.user['vocabulary_words']['vocabulary_words_test_step_num'] += 1
-        element = self.user["vocabulary_words"]['test_list'].pop(0)
-        text = "Напишите слово ..."
-        self.user["vocabulary_words"]['previous_test_list'] = [element]
-        if answer is None:
-            self.res['response']['tts'] = "Напишите слово " + element
+    def get_test_res(self, answer=0):
+
+        def func(dont_know=False):
+            if len(self.user["vocabulary_words"]['test_list']) == 0:
+                words = data["vocabulary_words"][:]
+                random.shuffle(words)
+                self.user["vocabulary_words"]['test_list'] = words
+
+            self.user['vocabulary_words']['vocabulary_words_test_step_num'] += 1
+            element = self.user["vocabulary_words"]['test_list'].pop(0)
+            template = random.choice(dialogues_info["vocabulary_test"])
+            text = template[:].format("...")
+            tts = template[:].format(element)
+            if dont_know:
+                previous = 'Правильное написание слова — \"{}\".\n'.format(
+                    self.user["vocabulary_words"]['previous_test_list'][0].capitalize())
+                text = previous + "\n" + text
+            self.res['response']['tts'] = tts
+            self.user["vocabulary_words"]['previous_test_list'] = [element]
+            return text
+
+        if answer == 0:
+            text = func()
             self.res['response']['text'] = text
-        elif answer:
-            self.res['response']['tts'] = "Правильно ! Напишите слово " + element
-            self.res['response']['text'] = "Правильно" + text
+            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        elif answer == 1:
+            text = func(True)
+            self.res['response']['text'] = text
+            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        elif answer == 2:
+            text = func()
+            self.res['response']['text'] = random.choice(dialogues_info['its_true']) + "\n\n" + text
+            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         else:
-            self.res['response']['tts'] = "Неправильно Напишите слово " + element
-            self.res['response']['text'] = "Неправильно" + text
-        self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+            self.res['response']['text'] = random.choice(dialogues_info["more_options"])
+            self.user["previous_buttons"] = self.res['response']['buttons'] = [{"title": "Не могу отгадать",
+                                                                                "hide": True},
+                                                                               {"title": "Повтори",
+                                                                                "hide": True}, {
+                                                                                   "title": "В главное меню",
+                                                                                   "hide": True
+                                                                               }]
         return self.res
 
     def get_menu(self):

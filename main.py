@@ -30,7 +30,7 @@ class Main_class():
                                                                               'list': []},
                                                         "vocabulary_words": {"vocabulary_words_step_num": 0,
                                                                              "vocabulary_words_test_step_num": 0,
-                                                                             'list': [], "test_list": []}}
+                                                                             'list': [], "test_list": [],'previous_test_list': []}}
         self.user["passage_num"] = 0
         self.user["room_num"] = 0
 
