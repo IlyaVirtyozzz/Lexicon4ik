@@ -30,7 +30,8 @@ class Main_class():
                                                                               'list': []},
                                                         "vocabulary_words": {"vocabulary_words_step_num": 0,
                                                                              "vocabulary_words_test_step_num": 0,
-                                                                             'list': [], "test_list": [],'previous_test_list': []}}
+                                                                             'list': [], "test_list": [],
+                                                                             'previous_test_list': []}}
         self.user["passage_num"] = 0
         self.user["room_num"] = 0
 
@@ -48,44 +49,42 @@ class Main_class():
         return False
 
     def check_phrase(self):
-        if self.req['request']["command"].strip().lower() in dialogues_info['is_hello']:
+        command = self.req['request']["original_utterance"].strip().lower()
+        if command in dialogues_info['is_hello']:
             return [random.choice(dialogues_info['hello']), 0]
-        elif self.req['request']["command"].strip().lower() in dialogues_info['is_bye']:
+        elif command in dialogues_info['is_bye']:
             return [random.choice(dialogues_info['bye']), 1]
-        elif self.req['request']["command"].strip().lower() == "ping":
-            return ["Кто(Who) я ping???", 0]
-        elif self.req['request']["command"].strip().lower() == "ок":
-            return ["Хоккей)", 0]
         return False
 
     def check_answer(self):
         result = self.check_phrase()
         if self.check_help():
-            self.res['response']['text'] = dialogues_info["ican"]
+            self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
             self.res['response']['buttons'] = self.user["previous_buttons"]
             return
         elif result:
             if result[1] == 1:
-                self.res['response']['text'] = result[0]
+                self.res['response']['text'], self.res['response']['tts'] = result[0]
                 self.res['response']["end_session"] = True
             else:
-                self.res['response']['text'] = result[0]
+                self.res['response']['text'], self.res['response']['tts'] = result[0]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
         elif self.user["passage_num"] == 0:
-            if self.req['request']["command"].strip().lower() == "помощь":
-                self.res['response']['text'] = dialogues_info["helps"]["main"]
+            if self.req['request']["original_utterance"].strip().lower() == "помощь":
+                self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["main"]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return
 
-            elif self.req['request']["command"].strip().lower() in dialogues_info["structure"]["main_menu"]:
+            elif self.req['request']["original_utterance"].strip().lower() in dialogues_info["structure"]["main_menu"]:
                 self.user["passage_num"] = dialogues_info["structure"]["main_menu"].index(
-                    self.req['request']["command"].strip().lower()) + 1
+                    self.req['request']["original_utterance"].strip().lower()) + 1
 
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
                 return 0
             else:
-                self.res['response']['text'] = random.choice(dialogues_info["incomprehension"])
+                self.res['response']['text'], self.res['response']['tts'] = random.choice(
+                    dialogues_info["incomprehension"])
                 self.user["previous_buttons"] = self.res['response']['buttons'] = dialogues_info['buttons']["main"]
         else:
             self.mains_passage[self.user["passage_num"]]()
