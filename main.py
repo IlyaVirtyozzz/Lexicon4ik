@@ -38,27 +38,29 @@ class Main_class():
     def start(self):
         if self.req['session']['new']:
             self.if_new_session()
-            menu = Menu(self.res, self.req, self.user_id)
+            menu = Menu(self.res, self.req, self.user_id, True)
             self.res = menu.get_res()
         else:
             self.check_answer()
 
-    def check_help(self):
+    def check_can(self):
         if 'умеешь' in list(map(lambda x: x.lower(), self.req['request']['nlu']["tokens"])):
             return True
         return False
 
-    def check_phrase(self):
-        command = self.req['request']["original_utterance"].strip().lower()
-        if command in dialogues_info['is_hello']:
+    def check_phrase(self, tokens, command):
+        if any(word in tokens for word in dialogues_info['is_hello']):
             return [random.choice(dialogues_info['hello']), 0]
-        elif command in dialogues_info['is_bye']:
+        elif any(word in tokens for word in dialogues_info['is_bye']):
             return [random.choice(dialogues_info['bye']), 1]
+
         return False
 
     def check_answer(self):
-        result = self.check_phrase()
-        if self.check_help():
+        command = self.req['request']["original_utterance"].strip().lower()
+        tokens = self.req['request']['nlu']['tokens']
+        result = self.check_phrase(tokens, command)
+        if self.check_can():
             self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
             self.res['response']['buttons'] = self.user["previous_buttons"]
             return
@@ -70,7 +72,7 @@ class Main_class():
                 self.res['response']['text'], self.res['response']['tts'] = result[0]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
         elif self.user["passage_num"] == 0:
-            if self.req['request']["original_utterance"].strip().lower() == "помощь":
+            if any(word in tokens for word in dialogues_info['is_help']):
                 self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["main"]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return
@@ -118,4 +120,6 @@ class Main_class():
         self.res = vocabularymenu.sequence()
 
     def get_response(self):
+        if self.req['request']["original_utterance"] != "ping":
+            logging.info(self.res['session']["user_id"][:5] + " : " + self.res['response']['text'])
         return self.res
