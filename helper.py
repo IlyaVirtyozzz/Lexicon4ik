@@ -8,6 +8,5 @@ def read_json():
 
 
 def dumb_json(data):
-    with open("data.json", "w") as write_file:
-        json.dump(data, write_file,ensure_ascii=False)
-
+    with open("data.json", "w",encoding='utf-8') as write_file:
+        json.dump(data, write_file, ensure_ascii=False)
