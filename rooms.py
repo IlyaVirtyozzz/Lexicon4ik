@@ -45,7 +45,7 @@ class Antonyms():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
@@ -112,6 +112,7 @@ class Antonyms():
         self.res['response']['text'] = text
         self.res['response']['tts'] = tts
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[1]
+
         return self.res
 
     def get_test_res(self, answer=0):
@@ -208,8 +209,9 @@ class Paronyms():
                 self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["paronyms"]['learn']
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
+
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
@@ -265,6 +267,7 @@ class Paronyms():
             tts += "•" + i + " — " + element[i]
         self.res['response']['text'], self.res['response']['tts'] = text, tts
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[1]
+
         return self.res
 
     def get_test_res(self, answer=0):
@@ -358,7 +361,7 @@ class Phraseologisms():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "ещё", "больше"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -432,7 +435,7 @@ class Buzzwords():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -508,7 +511,7 @@ class Stupid_Dictionary():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -559,7 +562,8 @@ class Vocabulary_words():
         tokens = self.req['request']['nlu']['tokens']
         if self.user["room_num"] == 0:
             if any(word in tokens for word in dialogues_info['is_help']):
-                self.res['response']['text'] = dialogues_info["helps"]["vocabulary_words"]['menu']
+                self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["vocabulary_words"][
+                    'menu']
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in ["поехали", "давай", "начать", "начинаем", "старт", "стартуем"]):
@@ -590,9 +594,12 @@ class Vocabulary_words():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
                 return self.get_res()
-
+            elif all(word in tokens for word in ["что", "означает"]):
+                self.res['response']['text'] = "Открываю"
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
                 self.user["room_num"] = 0
@@ -611,7 +618,10 @@ class Vocabulary_words():
                     'test']
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
-
+            elif all(word in tokens for word in ["что", "означает"]):
+                self.res['response']['text'] = "Открываю"
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                return self.res
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
                 self.user["room_num"] = 0
@@ -645,6 +655,13 @@ class Vocabulary_words():
         self.res['response']['text'] = temp[0].format(word[0].capitalize())
         self.res['response']['tts'] = temp[1].format(word[1].capitalize())
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        buttons = self.res['response']['buttons'][:]
+        buttons.insert(1, {
+            "title": "Что означает это слово?",
+            "url": "https://yandex.ru/search?text=Что%20означает%20слово%20{}%20?".format(word[0]),
+            "hide": True
+        })
+        self.res['response']['buttons'] = buttons
         return self.res
 
     def get_test_res(self, mode=0):
@@ -661,31 +678,36 @@ class Vocabulary_words():
 
         if mode == 0:
 
-            self.res['response']['text'] = temp[0].format("1) " + check_words[0] + " \n2) " + check_words[1])
-            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+            self.res['response']['text'] = temp[0].format(word[2]) + "1) " + check_words[0] + " \n2) " + check_words[1]
+            self.res['response']['tts'] = temp[0].format(word[1])
 
         else:
             check_list = self.user["vocabulary_words"]['previous_test_list']
             if check_list[0].strip().lower() == check_list[1][mode - 1].strip().lower():
                 true_ = random.choice(dialogues_info['its_true'])
 
-                self.res['response']['text'] = true_[0] + "\n\n" + temp[0].format(
-                    "1) " + check_words[0] + " \n2) " + check_words[1])
-                self.res['response']['tts'] = true_[1] + " " + temp[1].format(
-                    "1) " + check_words[0] + " \n2) " + check_words[1])
+                self.res['response']['text'] = true_[0] + "\n\n" + temp[0].format(word[2]) + "1) " + check_words[
+                    0] + " \n2) " + check_words[1]
+                self.res['response']['tts'] = true_[1] + " " + temp[1].format(word[1])
 
             else:
                 no = random.choice(dialogues_info['false'])
                 previous = 'Правильное написание слова — \"{}\".\n'.format(check_list[0])
                 previous_tts = 'Правильное написание сл+ова — \"{}\".\n'.format(check_list[0])
-
-                self.res['response']['text'] = no[0] + previous + "\n\n" + temp[0].format(
-                    "1) " + check_words[0] + " \n2) " + check_words[1])
+                self.res['response']['text'] = no[0] + previous + "\n\n" + temp[0].format(word[2]) + "1) " + \
+                                               check_words[0] + "\n2)" + check_words[1]
                 self.res['response']['tts'] = no[1] + previous_tts + " " + temp[1].format(
-                    "1) " + check_words[0] + " \n2) " + check_words[1])
+                    word[1])
 
-            self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
+        self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         self.user["vocabulary_words"]['previous_test_list'] = [word[0], check_words]
+        buttons = self.res['response']['buttons'][:]
+        buttons.insert(2, {
+            "title": "Что означает это слово?",
+            "url": "https://yandex.ru/search?text=Что%20означает%20слово%20{}%20?".format(word[0]),
+            "hide": True
+        })
+        self.res['response']['buttons'] = buttons
         return self.res
 
     def get_menu(self):
