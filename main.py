@@ -1,4 +1,5 @@
 import random
+from helper import add_log_text
 from constants import sessionStorage, dialogues_info, data, logging
 from rooms import Antonyms, Buzzwords, Paronyms, Phraseologisms, Stupid_Dictionary, Vocabulary_words, Menu
 
@@ -55,8 +56,13 @@ class Main_class():
         return False
 
     def check_answer(self):
-        command = self.req['request']["original_utterance"].strip().lower()
-        tokens = self.req['request']['nlu']['tokens']
+        if self.req['request'].get("original_utterance"):
+            command = self.req['request']["original_utterance"].strip().lower()
+            tokens = self.req['request']['nlu']['tokens']
+        else:
+            command = self.req['request']["payload"]["text"]
+            tokens = list(map(lambda x: x.lower(), self.req['request']["payload"]["text"].split()))
+
         if self.check_can():
             self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
             self.res['response']['buttons'] = self.user["previous_buttons"]
@@ -134,6 +140,7 @@ class Main_class():
         elif any(word in command.split() for word in dialogues_info['fuck_words']):
             self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info["fuck_answer"])
             self.res['response']['buttons'] = self.user["previous_buttons"]
+            add_log_text(command)
 
         elif all(word in tokens for word in ["как", "тебя", "зовут"]) or all(
                 word in tokens for word in ["как", "вас", "зовут"]):
@@ -156,6 +163,12 @@ class Main_class():
                 self.res['response']['text'], self.res['response']['tts'] = ["Поехали! Ой, выбери сначала категорию.",
                                                                              "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
+            elif any(word in tokens for word in ["вперёд", "ещё"]):
+                menu = Menu(self.res, self.req, self.user_id, False)
+                self.res = menu.get_res(1)
+            elif any(word in tokens for word in ["назад", "вернуться"]):
+                menu = Menu(self.res, self.req, self.user_id, False)
+                self.res = menu.get_res(0)
 
             elif any(word in tokens for word in
                      ["категория", "категории", "категорий"]):
@@ -167,6 +180,9 @@ class Main_class():
                 self.res['response']['text'], self.res['response']['tts'] = ["Ты и так уже здесь.",
                                                                              "Ты и так уже зд+есь."]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
+                menu = Menu(self.res, self.req, self.user_id, False)
+                self.res = menu.get_res(0, ["Ты и так уже здесь.",
+                                            "Ты и так уже зд+есь."])
             elif any(word in tokens for word in ["один", "первое", "1", "интересные", "крутые"]):
                 self.user["passage_num"] = 1
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
@@ -196,7 +212,14 @@ class Main_class():
             else:
                 self.res['response']['text'], self.res['response']['tts'] = random.choice(
                     dialogues_info["incomprehension"])
-                self.user["previous_buttons"] = self.res['response']['buttons'] = dialogues_info['buttons']["main"]
+                add_log_text(command)
+                self.user["previous_buttons"] = self.res['response']['buttons'] = [{
+                    "title": "Что ты умеешь?",
+                    "hide": True
+                }, {
+                    "title": "Помощь",
+                    "hide": True
+                }]
         else:
             self.mains_passage[self.user["passage_num"]]()
         return
@@ -230,15 +253,23 @@ class Main_class():
         self.res = vocabularymenu.sequence()
 
     def get_response(self):
-        if self.req['session']["message_id"] == 20 and not self.user['pls_like']:
+        if self.req['session']["message_id"] >= 20 and not self.user['pls_like'] and self.user["passage_num"] != 0:
             self.user['pls_like'] = True
-            self.res['response'][
-                'text'] = "Понравился навык? Оцени, пожалуйста) Твоё мнение для меня на вес золота.\n\n" + \
-                          self.res['response']['text']
+
             if self.res['response'].get('tts'):
-                self.res['response']['tts'] = "Понр+авился н+авык? Оцен+и, пож+алуйста)" \
+                self.res['response'][
+                    'text'] = "Понравился навык? Оцени, пожалуйста) Твоё мнение для меня на вес золота.\n\n" + \
+                              self.res['response']['text']
+                self.res['response']['tts'] = "Понр+авился н+авык? Оцени, пож+алуйста)" \
                                               " Тво+ё мн+ение для мен+я на в+ес з+олота. sil <[500]>" + \
                                               self.res['response']['tts']
+            else:
+                text = self.res['response']['text'][:]
+                self.res['response'][
+                    'text'] = "Понравился навык? Оцени, пожалуйста) Твоё мнение для меня на вес золота.\n\n" + text
+                self.res['response'][
+                    'tts'] = "Понр+авился н+авык? Оцен+и, пож+алуйста) Тво+ё мн+ение для мен+я на в+ес з+олота.\n\n" + \
+                             text
             buttons = self.res['response']['buttons'][:]
             buttons.insert(0, {
                 "title": "Оценить навык",
@@ -246,4 +277,5 @@ class Main_class():
                 "hide": True
             })
             self.res['response']['buttons'] = buttons
+
         return self.res
