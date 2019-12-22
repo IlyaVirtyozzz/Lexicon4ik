@@ -359,7 +359,8 @@ class Phraseologisms():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем"]):
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
+                      "начинай"]):
                 self.user["room_num"] = 1
                 return self.get_res()
             else:
@@ -433,7 +434,8 @@ class Buzzwords():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем"]):
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
+                      "начинай"]):
                 self.user["room_num"] = 1
                 return self.get_res()
             else:
@@ -508,7 +510,8 @@ class Stupid_Dictionary():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем"]):
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
+                      "начинай"]):
                 self.user["room_num"] = 1
                 return self.get_res()
 
@@ -596,7 +599,7 @@ class Vocabulary_words():
                 return self.get_test_res(0)
 
             else:
-                return self.get_incomprehension()
+                return self.get_incomprehension(command)
         elif self.user["room_num"] == 1:
             if any(word in tokens for word in dialogues_info['is_help']):
                 self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["vocabulary_words"][
@@ -644,7 +647,7 @@ class Vocabulary_words():
                 return self.get_menu()
             elif any(word in tokens for word in ["1", "однёрка", "один", "единица", "един"]):
                 return self.get_test_res(1)
-            elif any(word in tokens for word in ["2", "два", "двойка", "двоечка", "коронная", "двояк"]):
+            elif any(word in tokens for word in ["2", "два", "двойка", "коронная", "двоечка", "двояк"]):
                 return self.get_test_res(2)
             else:
                 return self.get_incomprehension(command)

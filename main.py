@@ -15,6 +15,7 @@ class Main_class():
         self.req = req
         self.user_id = req['session']['user_id']
         self.user = sessionStorage.get(self.user_id)
+        self.payload = False
 
     def if_not_in_base(self):
         self.user = sessionStorage[self.user_id] = {"passage_num": 0, "room_num": 0, "previous_buttons": [],
@@ -56,159 +57,222 @@ class Main_class():
         return False
 
     def check_answer(self):
+
         if self.req['request'].get("original_utterance"):
             command = self.req['request']["original_utterance"].strip().lower()
             tokens = self.req['request']['nlu']['tokens']
+
         else:
             command = self.req['request']["payload"]["text"]
             tokens = list(map(lambda x: x.lower(), self.req['request']["payload"]["text"].split()))
+            self.payload = True
 
-        if self.check_can():
-            self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
+        if not self.payload:
+            if self.check_can():
+                self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
 
-        elif all(word in tokens for word in ["как", "дела"]) or all(word in tokens for word in ["как", "настроение"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "Нормально, нормально нереально, не будем тратить время на житейские разговоры, приступим к делу.",
-                "Норм+ально, норм+ально нере+ально,"
-                " не б+удем тр+атить вр+емя на жит+ейские разгов+оры, прист+упим к д+елу."]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
+            elif all(word in tokens for word in ["как", "дела"]) or all(
+                    word in tokens for word in ["как", "настроение"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Нормально, нормально нереально, не будем тратить время на житейские разговоры, приступим к делу.",
+                    "Норм+ально, норм+ально нере+ально,"
+                    " не б+удем тр+атить вр+емя на жит+ейские разгов+оры, прист+упим к д+елу."]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
 
-        elif all(word in tokens for word in ["оценить", "навык"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "Благодарю Тебя.",
-                "Благодар+ю Теб+я."]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
+            elif all(word in tokens for word in ["оценить", "навык"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Благодарю Тебя.",
+                    "Благодар+ю Теб+я."]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
 
-        elif any(word in tokens for word in ["спасибо", "благодарю", "сенкс"]):
-            self.res['response']['text'], self.res['response']['tts'] = ["Тебе спасибо, что зашёл)",
-                                                                         "Тебе спас+ибо, что заш+ёл"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-            self.user['pls_like'] = True
-            buttons = self.res['response']['buttons'][:]
-            buttons.insert(0, {
-                "title": "Оценить навык",
-                "url": "https://dialogs.yandex.ru/store/skills/376e3bb3-prokachaj-leksiko",
-                "hide": True
-            })
-            self.res['response']['buttons'] = buttons
+            elif any(word in tokens for word in ["спасибо", "благодарю", "сенкс"]):
+                self.res['response']['text'], self.res['response']['tts'] = ["Тебе спасибо, что зашёл)",
+                                                                             "Тебе спас+ибо, что заш+ёл"]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                self.user['pls_like'] = True
+                buttons = self.res['response']['buttons'][:]
+                buttons.insert(0, {
+                    "title": "Оценить навык",
+                    "url": "https://dialogs.yandex.ru/store/skills/376e3bb3-prokachaj-leksiko",
+                    "hide": True
+                })
+                self.res['response']['buttons'] = buttons
 
-        elif all(word in tokens for word in ["как", "это"]) or all(word in tokens for word in ["почему", "так"]) or all(
+            elif all(word in tokens for word in ["как", "это"]) or all(
+                    word in tokens for word in ["почему", "так"]) or all(
                 word in tokens for word in ["почему", "это"]):
-            self.res['response']['text'], self.res['response']['tts'] = ["Вот так вот)",
-                                                                         "Вот так вот"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif any(word in tokens for word in ["алиса", "alice", "алис"]):
-            self.res['response']['text'], self.res['response']['tts'] = ["Ой. Я не Алиса. Можно сказать, я её друг.",
-                                                                         "Ой. Я не Ал+иса. Можно сказ+ать, я её др+уг."]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif any(word in tokens for word in dialogues_info['is_hello']):
-            self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info['hello'])
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif all(word in tokens for word in ["ты", "кто"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "Я тот кто может научить Тебя полезным словам)",
-                "Я тот кто м+ожет науч+ить Теб+я пол+езным слов+ам)"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif all(word in tokens for word in ["ты", "мальчик"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "Скорее всего, я навык мужского пола. Увы, так исторически сложилось.",
-                "Скор+ее вс+его, я н+авык мужск+ого п+ола. Ув+ы, так истор+ически слож+илось."]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif all(word in tokens for word in ["как", "приложение", "называется"]) or all(
-                word in tokens for word in ["как", "навык", "называется"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "\"Прокачай Лексикон\" По-моему звучит прикольно)",
-                "\"Прокач+ай Лексик+он\" По-м+оему звуч+ит прик+ольно!)"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif all(word in tokens for word in ["ау", "эй", "уау"]):
-            self.res['response']['text'], self.res['response']['tts'] = [
-                "Да-да, я здесь.",
-                "Да-да, я зд+есь."]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif any(word in tokens for word in dialogues_info['is_bye']):
-            self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info['bye'])
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif any(word in command.split() for word in dialogues_info['fuck_words']):
-            self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info["fuck_answer"])
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-            add_log_text(command)
-
-        elif all(word in tokens for word in ["как", "тебя", "зовут"]) or all(
-                word in tokens for word in ["как", "вас", "зовут"]):
-            self.res['response']['text'], self.res['response']['tts'] = ["Сам прихожу. А так, имени у меня нет)",
-                                                                         "Сам прихож+у. А т+ак, +имени у мен+я н+ет)"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif any(word in tokens for word in ["ясно", "понятно"]):
-            self.res['response']['text'], self.res['response']['tts'] = ["Хе-хе",
-                                                                         "Хе-хе"]
-            self.res['response']['buttons'] = self.user["previous_buttons"]
-
-        elif self.user["passage_num"] == 0:
-            if any(word in tokens for word in dialogues_info['is_help']):
-                self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["main"]
+                self.res['response']['text'], self.res['response']['tts'] = ["Вот так вот)",
+                                                                             "Вот так вот"]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
 
-            elif any(word in tokens for word in
-                     ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да", "куда"]):
-                self.res['response']['text'], self.res['response']['tts'] = ["Поехали! Ой, выбери сначала категорию.",
-                                                                             "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
+            elif any(word in tokens for word in ["алиса", "alice", "алис"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Ой. Я не Алиса. Можно сказать, я её друг.",
+                    "Ой. Я не Ал+иса. Можно сказ+ать, я её др+уг."]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
-            elif any(word in tokens for word in ["вперёд", "ещё"]):
-                menu = Menu(self.res, self.req, self.user_id, False)
-                self.res = menu.get_res(1)
-            elif any(word in tokens for word in ["назад", "вернуться"]):
-                menu = Menu(self.res, self.req, self.user_id, False)
-                self.res = menu.get_res(0)
 
-            elif any(word in tokens for word in
-                     ["категория", "категории", "категорий"]):
-                self.res['response']['text'], self.res['response']['tts'] = ["Выбери категорию с помощью кнопок.",
-                                                                             "В+ыбери катег+орию с п+омощью кн+опок."]
+            elif any(word in tokens for word in dialogues_info['is_hello']):
+                self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info['hello'])
                 self.res['response']['buttons'] = self.user["previous_buttons"]
-            elif any(word in tokens for word in
-                     ["меню", "главное"]):
-                self.res['response']['text'], self.res['response']['tts'] = ["Ты и так уже здесь.",
-                                                                             "Ты и так уже зд+есь."]
+
+            elif all(word in tokens for word in ["ты", "кто"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Я тот кто может научить Тебя полезным словам)",
+                    "Я тот кто м+ожет науч+ить Теб+я пол+езным слов+ам)"]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
-                menu = Menu(self.res, self.req, self.user_id, False)
-                self.res = menu.get_res(0, ["Ты и так уже здесь.",
-                                            "Ты и так уже зд+есь."])
-            elif any(word in tokens for word in ["один", "первое", "1", "интересные", "крутые"]):
+
+            elif all(word in tokens for word in ["ты", "мальчик"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Скорее всего, я навык мужского пола. Увы, так исторически сложилось.",
+                    "Скор+ее вс+его, я н+авык мужск+ого п+ола. Ув+ы, так истор+ически слож+илось."]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif all(word in tokens for word in ["как", "приложение", "называется"]) or all(
+                    word in tokens for word in ["как", "навык", "называется"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "\"Прокачай Лексикон\" По-моему звучит прикольно)",
+                    "\"Прокач+ай Лексик+он\" По-м+оему звуч+ит прик+ольно!)"]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif all(word in tokens for word in ["ау", "эй", "уау"]):
+                self.res['response']['text'], self.res['response']['tts'] = [
+                    "Да-да, я здесь.",
+                    "Да-да, я зд+есь."]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif any(word in tokens for word in dialogues_info['is_bye']):
+                self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info['bye'])
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif any(word in command.split() for word in dialogues_info['fuck_words']):
+                self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info["fuck_answer"])
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+                add_log_text(command)
+
+            elif all(word in tokens for word in ["как", "тебя", "зовут"]) or all(
+                    word in tokens for word in ["как", "вас", "зовут"]):
+                self.res['response']['text'], self.res['response']['tts'] = ["Сам прихожу. А так, имени у меня нет)",
+                                                                             "Сам прихож+у. А т+ак, +имени у мен+я н+ет)"]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif any(word in tokens for word in ["ясно", "понятно"]):
+                self.res['response']['text'], self.res['response']['tts'] = ["Хе-хе",
+                                                                             "Хе-хе"]
+                self.res['response']['buttons'] = self.user["previous_buttons"]
+
+            elif self.user["passage_num"] == 0:
+                if any(word in tokens for word in dialogues_info['is_help']):
+                    self.res['response']['text'], self.res['response']['tts'] = dialogues_info["helps"]["main"]
+                    self.res['response']['buttons'] = self.user["previous_buttons"]
+
+                elif any(word in tokens for word in
+                         ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да"]):
+                    self.res['response']['text'], self.res['response']['tts'] = [
+                        "Поехали! Ой, выбери сначала категорию.",
+                        "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
+                    self.res['response']['buttons'] = self.user["previous_buttons"]
+
+                elif any(word in tokens for word in
+                         ["категория", "категории", "категорий"]):
+                    self.res['response']['text'], self.res['response']['tts'] = ["Выбери категорию с помощью кнопок на панели.",
+                                                                                 "В+ыбери катег+орию с п+омощью кн+опок на пан+ели."]
+                    self.res['response']['buttons'] = self.user["previous_buttons"]
+                elif any(word in tokens for word in
+                         ["меню", "главное"]):
+                    self.res['response']['text'], self.res['response']['tts'] = ["Ты и так уже здесь.",
+                                                                                 "Ты и так уже зд+есь."]
+                    self.res['response']['buttons'] = self.user["previous_buttons"]
+                    menu = Menu(self.res, self.req, self.user_id, False)
+                    self.res = menu.get_res(0, ["Ты и так уже здесь.",
+                                                "Ты и так уже зд+есь."])
+                elif any(word in tokens for word in ["интересные"]):
+                    self.user["passage_num"] = 1
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                elif any(word in tokens for word in ["словарные", "словарная", "сс", "словарь", "словарный"]):
+                    self.user["passage_num"] = 2
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                elif any(word in tokens for word in ["фразеологизмы", "фразеологизм"]):
+                    self.user["passage_num"] = 3
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                elif any(word in tokens for word in ["антоним", "антонимы", "антон"]):
+                    self.user["passage_num"] = 4
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                elif any(word in tokens for word in ["пароним", "парон", "парные", "паронимы"]):
+                    self.user["passage_num"] = 5
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                elif any(word in tokens for word in ["глупые", "бестолковые"]):
+                    self.user["passage_num"] = 6
+                    a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
+                    self.res = a.get_menu()
+                else:
+                    self.res['response']['text'], self.res['response']['tts'] = random.choice(
+                        dialogues_info["incomprehension"])
+                    add_log_text(command)
+                    self.user["previous_buttons"] = self.res['response']['buttons'] = [{
+                        "title": "Что ты умеешь?",
+                        "hide": True
+                    }, {
+                        "title": "Помощь",
+                        "hide": True
+                    }]
+            else:
+                self.mains_passage[self.user["passage_num"]]()
+        else:
+            self.user["room_num"] = 0
+            if any(word in tokens for word in ["интересные"]):
                 self.user["passage_num"] = 1
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
-            elif any(
-                    word in tokens for word in
-                    ["два", "второе", "2", "словарные", "словарная", "сс", "словарь", "словарный"]):
+            elif any(word in tokens for word in ["словарные", "словарная", "сс", "словарь", "словарный"]):
                 self.user["passage_num"] = 2
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
-            elif any(word in tokens for word in ["три", "третий", "3", "фразеологизмы", "фразиология", "фраз"]):
+            elif any(word in tokens for word in ["фразеологизмы", "фразеологизм"]):
                 self.user["passage_num"] = 3
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
-            elif any(word in tokens for word in ["чертвёртый", "четыре", "4", "антоним", "антонимы", "антон"]):
+
+            elif any(word in tokens for word in ["антоним", "антонимы", "антон"]):
                 self.user["passage_num"] = 4
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
-            elif any(word in tokens for word in ["5", "пять", "пятый", "пароним", "парон", "парные", "паронимы"]):
+
+            elif any(word in tokens for word in ["пароним", "парон", "парные", "паронимы"]):
                 self.user["passage_num"] = 5
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
-            elif any(word in tokens for word in ["6", "шесть", "шестой", "глупые", "бестолковые", "бестолковая"]):
+            elif any(word in tokens for word in ["глупые", "бестолковые"]):
                 self.user["passage_num"] = 6
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id)
                 self.res = a.get_menu()
+            elif any(word in tokens for word in ["вперёд"]):
+                self.user["passage_num"] = 0
+                menu = Menu(self.res, self.req, self.user_id, False)
+                self.res = menu.get_res(1)
+                self.user["previous_buttons"] = self.res['response']['buttons'] = [{
+                    "title": "Что ты умеешь?",
+                    "hide": True
+                }, {
+                    "title": "Помощь",
+                    "hide": True
+                }]
+            elif any(word in tokens for word in ["назад"]):
+                self.user["passage_num"] = 0
+                menu = Menu(self.res, self.req, self.user_id, False)
+                self.res = menu.get_res(0)
+                self.user["previous_buttons"] = self.res['response']['buttons'] = [{
+                    "title": "Что ты умеешь?",
+                    "hide": True
+                }, {
+                    "title": "Помощь",
+                    "hide": True
+                }]
             else:
                 self.res['response']['text'], self.res['response']['tts'] = random.choice(
                     dialogues_info["incomprehension"])
@@ -220,8 +284,6 @@ class Main_class():
                     "title": "Помощь",
                     "hide": True
                 }]
-        else:
-            self.mains_passage[self.user["passage_num"]]()
         return
 
     def main_menu(self):

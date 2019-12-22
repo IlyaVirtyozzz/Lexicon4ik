@@ -12,6 +12,13 @@ def dumb_json(data):
         json.dump(data, write_file, ensure_ascii=False)
 
 
+def create_dont_know_log():
+    with open("mysite/dont_know.txt", "w", encoding='utf-8') as write_file:
+        pass
+
+
 def add_log_text(text):
-    with open("dont_know.txt", "a", encoding='utf-8') as write_file:
+    if not os.path.exists("mysite/dont_know.txt"):
+        create_dont_know_log()
+    with open("mysite/dont_know.txt", "a", encoding='utf-8') as write_file:
         write_file.write(text + "\n")
