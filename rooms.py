@@ -44,7 +44,7 @@ class Antonyms():
             elif any(word in tokens for word in ["изучить", "посмотреть"]):
                 self.user["room_num"] = 1
                 return self.get_res()
-            elif any(word in tokens for word in ["игра", "мини", "угадай", "игрушка"]):
+            elif any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем"]):
                 self.user["room_num"] = 2
                 return self.get_test_res(0)
             else:
@@ -55,7 +55,8 @@ class Antonyms():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё",
+                      "давай", "next", "некст"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
@@ -209,7 +210,7 @@ class Paronyms():
             elif any(word in tokens for word in ["изучить", "посмотреть"]):
                 self.user["room_num"] = 1
                 return self.get_res()
-            elif any(word in tokens for word in ["игра", "мини", "подбери", "игрушка"]):
+            elif any(word in tokens for word in ["игра", "мини", "подбери", "игрушка", "играем"]):
                 self.user["room_num"] = 2
                 return self.get_test_res(0)
             else:
@@ -221,7 +222,8 @@ class Paronyms():
                 return self.res
 
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё",
+                      "давай", "next", "некст"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "начало"]):
                 self.user["passage_num"] = 0
@@ -359,7 +361,8 @@ class Phraseologisms():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем", "погнали",
+                      "играем"
                       "начинай"]):
                 self.user["room_num"] = 1
                 return self.get_res()
@@ -372,7 +375,8 @@ class Phraseologisms():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "ещё", "больше"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "ещё", "больше",
+                      "давай", "next", "некст"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -434,8 +438,9 @@ class Buzzwords():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
-                      "начинай"]):
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем", "погнали"
+                                                                                                              "начинай",
+                      "играем"]):
                 self.user["room_num"] = 1
                 return self.get_res()
             else:
@@ -447,7 +452,8 @@ class Buzzwords():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё",
+                      "давай", "next", "некст"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -510,8 +516,9 @@ class Stupid_Dictionary():
                 menu = Menu(self.res, self.req, self.user_id)
                 return menu.get_res()
             elif any(word in tokens for word in
-                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем",
-                      "начинай"]):
+                     ["изучить", "посмотреть", "поехали", "давай", "начать", "начинаем", "старт", "стартуем", "погнали"
+                                                                                                              "начинай",
+                      "играем"]):
                 self.user["room_num"] = 1
                 return self.get_res()
 
@@ -524,7 +531,8 @@ class Stupid_Dictionary():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё",
+                      "давай", "next", "некст"]):
                 return self.get_res()
             elif command == "в главное меню" or any(word in tokens for word in ["главное", "меню", "вернись", "назад"]):
                 self.user["passage_num"] = 0
@@ -594,7 +602,7 @@ class Vocabulary_words():
             elif any(word in tokens for word in ["изучить", "посмотреть"]):
                 self.user["room_num"] = 1
                 return self.get_res()
-            elif any(word in tokens for word in ["игра", "мини", "угадай", "игрушка"]):
+            elif any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем"]):
                 self.user["room_num"] = 2
                 return self.get_test_res(0)
 
@@ -607,7 +615,9 @@ class Vocabulary_words():
                 self.res['response']['buttons'] = self.user["previous_buttons"]
                 return self.res
             elif any(word in tokens for word in
-                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё"]):
+                     ["далее", "дальше", "следующая", "следующее", "следующий", "дарья", "да", "больше", "ещё", "next",
+                      "некст"
+                      "давай"]):
                 return self.get_res()
             elif all(word in tokens for word in ["что", "означает"]):
                 self.res['response']['text'] = "Открываю"

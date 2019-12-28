@@ -167,7 +167,7 @@ class Main_class():
                     self.res['response']['buttons'] = self.user["previous_buttons"]
 
                 elif any(word in tokens for word in
-                         ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да"]):
+                         ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да", "погнали"]):
                     self.res['response']['text'], self.res['response']['tts'] = [
                         "Поехали! Ой, выбери сначала категорию.",
                         "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
@@ -175,8 +175,9 @@ class Main_class():
 
                 elif any(word in tokens for word in
                          ["категория", "категории", "категорий"]):
-                    self.res['response']['text'], self.res['response']['tts'] = ["Выбери категорию с помощью кнопок на панели.",
-                                                                                 "В+ыбери катег+орию с п+омощью кн+опок на пан+ели."]
+                    self.res['response']['text'], self.res['response']['tts'] = [
+                        "Выбери категорию с помощью кнопок на панели.",
+                        "В+ыбери катег+орию с п+омощью кн+опок на пан+ели."]
                     self.res['response']['buttons'] = self.user["previous_buttons"]
                 elif any(word in tokens for word in
                          ["меню", "главное"]):
