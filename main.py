@@ -14,6 +14,7 @@ class Main_class():
         self.res = res
         self.req = req
         self.user_id = req['session']['user_id']
+        self.screen = self.req["meta"]["interfaces"].get("screen")
         self.user = sessionStorage.get(self.user_id)
         self.payload = False
 
@@ -71,7 +72,6 @@ class Main_class():
             if self.check_can():
                 self.res['response']['text'], self.res['response']['tts'] = dialogues_info["ican"]
                 self.res['response']['buttons'] = self.user["previous_buttons"]
-
             elif all(word in tokens for word in ["как", "дела"]) or all(
                     word in tokens for word in ["как", "настроение"]):
                 self.res['response']['text'], self.res['response']['tts'] = [
