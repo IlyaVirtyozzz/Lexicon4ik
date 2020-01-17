@@ -23,6 +23,7 @@ class Main_class():
 
     def if_not_in_base(self):
         self.user = sessionStorage[self.user_id] = {"passage_num": 0, "room_num": 0, "previous_buttons": [],
+                                                    "previous_tts": "а", "previous_text": "а",
                                                     "screen": False,
                                                     "pls_like": False,
                                                     "first_help": True,
@@ -52,15 +53,19 @@ class Main_class():
 
             self.if_new_session()
             if "screen" in self.req["meta"]["interfaces"]:
-                self.screen = self.user["screen"] = False
+                self.screen = self.user["screen"] = True
             else:
                 self.screen = self.user["screen"] = False
             menu = Menu(self.res, self.req, self.user_id, self.screen, True)
             self.res = menu.get_res()
         else:
-            self.screen = self.user["screen"]
             if not self.user:
                 self.if_new_session()
+                if "screen" in self.req["meta"]["interfaces"]:
+                    self.screen = self.user["screen"] = True
+                else:
+                    self.screen = self.user["screen"] = False
+            self.screen = self.user["screen"]
             self.check_answer()
 
     def check_answer(self):
@@ -73,19 +78,21 @@ class Main_class():
             command = self.req['request']["payload"]["text"]
             tokens = list(map(lambda x: x.lower(), self.req['request']["payload"]["text"].split()))
             self.payload = True
-        if any(word in tokens for word in ["кизару"]) and any(word in tokens for word in ["салют"]):
-            self.res['response']['text'], self.res['response'][
-                'tts'] = "Включаю Вкусный Трек ", "<speaker audio=\"dialogs-upload/f1319563-40d5-46f3-b0d7-eab7915109e9/60ecb8d1-5131-4615-a5cb-ffe0b6c6aa0f.opus\">" \
-                                                  " <speaker audio=\"dialogs-upload/f1319563-40d5-46f3-b0d7-eab7915109e9/78870669-0330-4420-a99a-71242c370553.opus\">"
+
+        if command == "screen_true123":
+            self.res['response']['text'], self.res['response']['tts'] = "Для телефонов", "Для телефонов"
             self.user["screen"] = True
             return
-        if command == "скрин":
-            self.res['response']['text'], self.res['response']['tts'] = "аа", "аа"
-            self.user["screen"] = True
-            return
-        elif command == "нескрин":
-            self.res['response']['text'], self.res['response']['tts'] = "бб", "бб"
+        elif command == "screen_false123":
+            self.res['response']['text'], self.res['response']['tts'] = "Для колонок", "Для колонок"
             self.user["screen"] = False
+            return
+
+        elif (any(word in tokens for word in ["повторить", "повтори", "повтор"]) or ("еще раз" in command)) and (
+                not self.screen) and not ((self.user["passage_num"] in [4, 2, 5]) and ((self.user["room_num"] == 2))):
+            self.res['response']['text'] = self.user['previous_text'][:]
+            self.res['response']['tts'] = self.user['previous_tts'][:]
+            self.res['response']['buttons'] = self.user["previous_buttons"]
             return
         if not self.payload:
             if any(word in tokens for word in
@@ -203,10 +210,15 @@ class Main_class():
                     (any(word in tokens for word in ["какие"]) or (
                             any(word in tokens for word in ["категория", "категории", "категорий"]))):
                 if self.screen:
-                    self.res['response']['text'], self.res['response']['tts'] = [
-                        "Выбери категорию с помощью кнопок на панели.",
-                        "В+ыбери катег+орию с п+омощью кн+опок на пан+ели."]
-                    self.res['response']['buttons'] = self.user["previous_buttons"]
+                    menu = Menu(self.res, self.req, self.user_id, self.screen, False)
+                    self.res = menu.get_res(0)
+                    self.user["previous_buttons"] = self.res['response']['buttons'] = [{
+                        "title": "Что ты умеешь?",
+                        "hide": True
+                    }, {
+                        "title": "Помощь",
+                        "hide": True
+                    }]
                 else:
                     self.res['response']['text'], self.res['response']['tts'] = [
                         "Интересные слова. Словарные слова. Фразеологизмы. Паронимы. Антонимы. Бестолковые слова.",
@@ -256,15 +268,7 @@ class Main_class():
                     else:
                         self.res['response']['text'], self.res['response']['tts'] = \
                             dialogues_info["helps_without_screen"]["main"]
-                elif any(word in tokens for word in
-                         ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да", "погнали"]):
-                    self.res['response']['text'], self.res['response']['tts'] = [
-                        "Поехали! Ой, выбери сначала категорию.",
-                        "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
-                    self.res['response']['buttons'] = self.user["previous_buttons"]
-
-                elif any(word in tokens for word in
-                         ["меню", "главное"]):
+                elif any(word in tokens for word in ["меню", "главное"]):
                     if self.screen:
                         self.res['response']['text'], self.res['response']['tts'] = ["Ты и так уже здесь.",
                                                                                      "Ты и так уже зд+есь."]
@@ -301,6 +305,12 @@ class Main_class():
                     self.user["passage_num"] = 6
                     a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id, self.screen)
                     self.res = a.get_menu()
+                elif any(word in tokens for word in
+                         ["поехали", "давай", "начать", "начинаем", "старт", "стартуем", "да", "погнали"]):
+                    self.res['response']['text'], self.res['response']['tts'] = [
+                        "Поехали! Ой, выбери сначала категорию.",
+                        "По+ехали! Ой,sil <[200]> в+ыбери снач+ала катег+орию."]
+                    self.res['response']['buttons'] = self.user["previous_buttons"]
                 else:
                     if self.screen:
                         self.res['response']['text'], self.res['response']['tts'] = random.choice(
@@ -411,6 +421,8 @@ class Main_class():
         self.res = vocabularymenu.sequence()
 
     def get_response(self):
+        self.user['previous_text'] = self.res['response']['text'][:]
+        self.user['previous_tts'] = self.res['response']['tts'][:]
         if self.req['session']["message_id"] >= 20 and not self.user['pls_like'] and self.user["passage_num"] != 0:
             self.user['pls_like'] = True
 

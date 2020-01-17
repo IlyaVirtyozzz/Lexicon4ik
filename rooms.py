@@ -82,7 +82,7 @@ class Antonyms():
                 return self.res
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
-                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру"]):
+                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру", "играть"]):
                 self.user["room_num"] = 2
                 return self.get_test_res(0)
 
@@ -120,6 +120,11 @@ class Antonyms():
                     self.res['response']['text'], self.res['response']['tts'] = \
                         dialogues_info["helps_without_screen"]["antonyms"]['test']
                 return self.res
+            elif (any(word in tokens for word in ["повторить", "повтори", "повтор"]) or (
+                    "еще раз" in command)) and not self.screen:
+                self.res['response']['text'] = self.user["antonyms"]['previous_test_list'][0]
+                self.res['response']['tts'] = self.user["antonyms"]['previous_test_list'][0]
+                return self.res
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
                     any(word in tokens for word in ["изучать", "выучить", "осваивать"]):
@@ -135,9 +140,10 @@ class Antonyms():
                 self.user["room_num"] = 0
                 self.user['antonyms']['antonyms_step_num'] = 0
                 return self.get_menu()
+
             elif command == "не могу отгадать" or any(word in tokens for word in ["хз", "не"]):
                 return self.get_test_res(1)
-            elif command in self.user["antonyms"]['previous_test_list']:
+            elif command in self.user["antonyms"]['previous_test_list'][1]:
                 return self.get_test_res(2)
             else:
                 return self.get_test_res(3)
@@ -184,12 +190,13 @@ class Antonyms():
             tts = temp[1].format(list(element.keys())[0])
             if dont_know:
                 previous = 'Правильные варианты ответов:\n'
-                for i in self.user["antonyms"]['previous_test_list']:
+                for i in self.user["antonyms"]['previous_test_list'][1]:
                     previous += "•" + i.capitalize() + '\n'
                 text = previous + "\n" + text
                 tts = previous + "sil <[500]>" + tts
 
-            self.user["antonyms"]['previous_test_list'] = list(map(lambda x: x.lower(), variants))
+            self.user["antonyms"]['previous_test_list'] = ["Подбер+ите ант+оним к сл+ову " + list(element.keys())[0],
+                                                           list(map(lambda x: x.lower(), variants))]
             return [text, tts]
 
         if answer == 0:
@@ -202,7 +209,7 @@ class Antonyms():
             text, tts = func()
             true_ = random.choice(dialogues_info['its_true'])
             self.res['response']['text'] = true_[0] + "\n\n" + text
-            self.res['response']['tts'] = random.choice(dialogues_info["win_sounds"]) + true_[1] + "\n\n" + tts
+            self.res['response']['tts'] = true_[1] + "\n\n" + tts
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         else:
             self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info["more_options"])
@@ -296,7 +303,7 @@ class Paronyms():
                 return self.res
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
-                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру"]):
+                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру", "играть"]):
                 self.user["room_num"] = 2
                 return self.get_test_res(0)
             elif any(word in tokens for word in dialogues_info["next"]):
@@ -332,6 +339,11 @@ class Paronyms():
                     self.res['response']['text'], self.res['response']['tts'] = \
                         dialogues_info["helps_without_screen"]["paronyms"]['test']
                 return self.res
+            elif (any(word in tokens for word in ["повторить", "повтори", "повтор"]) or (
+                    "еще раз" in command)) and not self.screen:
+                self.res['response']['text'] = self.user["paronyms"]['previous_test_list'][0]
+                self.res['response']['tts'] = self.user["paronyms"]['previous_test_list'][0]
+                return self.res
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
                     any(word in tokens for word in ["изучать", "выучить", "осваивать"]):
@@ -349,7 +361,7 @@ class Paronyms():
                 return self.get_menu()
             elif command == "не могу отгадать" or any(word in tokens for word in ["хз", "не"]):
                 return self.get_test_res(1)
-            elif command in self.user["paronyms"]['previous_test_list']:
+            elif command in self.user["paronyms"]['previous_test_list'][1]:
                 return self.get_test_res(2)
             else:
                 return self.get_test_res(3)
@@ -366,7 +378,7 @@ class Paronyms():
         tts = temp[1]
         for i in list(element.keys()):
             text += "•" + i + " — " + element[i] + "\n\n"
-            tts += "•" + i + " — " + element[i]
+            tts += "•" + i + " — " + element[i] + "sil <[200]>"
         self.res['response']['text'], self.res['response']['tts'] = text, tts
         self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[1]
 
@@ -388,11 +400,12 @@ class Paronyms():
             tts = temp[1].format(word)
             if dont_know:
                 previous = 'Правильные варианты ответов:\n'
-                for i in self.user["paronyms"]['previous_test_list']:
+                for i in self.user["paronyms"]['previous_test_list'][1]:
                     previous += "•" + i.capitalize() + '\n'
                 text = previous + "\n" + text
                 tts = previous + "sil <[500]>" + tts
-            self.user["paronyms"]['previous_test_list'] = list(map(lambda x: x.lower(), variants))
+            self.user["paronyms"]['previous_test_list'] = ["Какой пароним у слова " + word + "?",
+                                                           list(map(lambda x: x.lower(), variants))]
             return [text, tts]
 
         if answer == 0:
@@ -405,7 +418,7 @@ class Paronyms():
             text, tts = func()
             true_ = random.choice(dialogues_info['its_true'])
             self.res['response']['text'] = true_[0] + "\n\n" + text
-            self.res['response']['tts'] = random.choice(dialogues_info["win_sounds"]) + true_[1] + tts
+            self.res['response']['tts'] = true_[1] + tts
             self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[self.user["room_num"]]
         else:
             self.res['response']['text'], self.res['response']['tts'] = random.choice(dialogues_info["more_options"])
@@ -738,6 +751,7 @@ class Stupid_Dictionary():
 
 
 class Vocabulary_words():
+
     def __init__(self, res, req, user_id, screen):
         self.res = res
         self.req = req
@@ -768,10 +782,7 @@ class Vocabulary_words():
                 return menu.get_res()
             elif any(word in tokens for word in ["изучить", "посмотреть", "послушать", "обучение"]):
                 self.user["room_num"] = 1
-                if self.screen:
-                    return self.get_res()
-                else:
-                    return self.get_res_without_screen()
+                return self.get_res_without_screen()
             elif any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру"]):
                 self.user["room_num"] = 2
                 if self.screen:
@@ -811,9 +822,10 @@ class Vocabulary_words():
                     self.res['response']['text'], self.res['response']['tts'] = \
                         dialogues_info["helps_without_screen"]["vocabulary_words"]['learn']
                 return self.res
+
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
-                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру"]):
+                    any(word in tokens for word in ["игра", "мини", "угадай", "игрушка", "играем", "игру", "играть"]):
                 self.user["room_num"] = 2
 
                 if self.screen:
@@ -821,10 +833,8 @@ class Vocabulary_words():
                 else:
                     return self.get_test_res_without_screen()
             elif any(word in tokens for word in dialogues_info["next"]):
-                if self.screen:
-                    return self.get_res()
-                else:
-                    return self.get_res_without_screen()
+
+                return self.get_res_without_screen()
             elif all(word in tokens for word in ["что", "означает"]):
                 self.res['response']['text'] = "Открываю"
                 self.res['response']['buttons'] = self.user["previous_buttons"]
@@ -860,6 +870,12 @@ class Vocabulary_words():
                     self.res['response']['text'], self.res['response']['tts'] = \
                         dialogues_info["helps_without_screen"]["vocabulary_words"]['test']
                 return self.res
+            elif (any(word in tokens for word in ["повторить", "повтори", "повтор"]) or (
+                    "еще раз" in command)) and not self.screen:
+
+                self.res['response']['text'] = self.user["vocabulary_words"]['previous_test_list'][0]
+                self.res['response']['tts'] = self.user["vocabulary_words"]['previous_test_list'][0]
+                return self.res
             elif any(word in tokens for word in
                      ['включи', "включить", "открой", "запусти", "начни", "начать", "давай"]) and \
                     any(word in tokens for word in ["изучать", "выучить", "осваивать"]):
@@ -885,8 +901,19 @@ class Vocabulary_words():
             elif self.screen:
                 if any(word in tokens for word in ["1", "однёрка", "один", "единица", "един"]):
                     return self.get_test_res(1)
-                elif any(word in tokens for word in ["2", "два", "двойка", "коронная", "двоечка", "двояк"]):
+                elif any(word in tokens for word in ["2", "два", "двойка", "коронная", "двоечка", "двояк", "где"]):
                     return self.get_test_res(2)
+                else:
+                    if self.screen:
+                        self.res['response']['text'], self.res['response']['tts'] = \
+                            dialogues_info['incomprehension']['vocabulary_words']['test']
+                        self.user["previous_buttons"] = self.res['response']['buttons'] = self.buttons[
+                            self.user["room_num"]]
+                    else:
+                        self.res['response']['text'], self.res['response']['tts'] = \
+                            dialogues_info['incomprehension_without_screen']['vocabulary_words']['test']
+                    add_log_text(command)
+                    return self.res
             elif not self.screen:
                 return self.get_test_res_without_screen(1, tokens, command)
             else:
@@ -921,24 +948,31 @@ class Vocabulary_words():
                     or all(word in tokens for word in ["не", "шарю"]) \
                     or all(word in tokens for word in ["не", "могу", "отгадать"]):
 
-                answer = self.user["vocabulary_words"]['previous_test_list'][0]
-                mode_ = self.user["vocabulary_words"]['previous_test_list'][1]
+                answer = self.user["vocabulary_words"]['previous_test_list'][1][0]
+                mode_ = self.user["vocabulary_words"]['previous_test_list'][1][1]
+
                 if mode_ == 0:
-                    if any(word in tokens for word in ["одна"]):
+                    if any(word in tokens for word in ["1", "однёрка", "один", "единица", "един"]):
+                        letter_text, letter_tts = self.check_letter(answer)
                         loss_ = random.choice(dialogues_info['loss_without_screen']['double']['double'])
-                        text = loss_[0].format(l_1=answer) + "\n\n"
-                        tts = loss_[0].format(l_1=answer) + "sil <[400]>"
-                    elif any(word in tokens for word in ["две"]):
+                        text = loss_[0].format(l_1=letter_text) + "\n\n"
+                        tts = loss_[0].format(l_1=letter_tts) + "sil <[400]>"
+
+                    elif any(word in tokens for word in ["2", "два", "двойка", "коронная", "двоечка", "двояк", "где"]):
+                        letter_text, letter_tts = self.check_letter(answer[:1])
                         loss_ = random.choice(dialogues_info['loss_without_screen']['double']["once"])
-                        text = loss_[0].format(l_1=answer) + "\n\n"
-                        tts = loss_[0].format(l_1=answer) + "sil <[400]>"
+                        text = loss_[0].format(l_1=letter_text) + "\n\n"
+                        tts = loss_[0].format(l_1=letter_tts) + "sil <[400]>"
+
                 else:
+                    letter_text, letter_tts = self.check_letter(answer)
                     true_ = random.choice(dialogues_info['loss_without_screen']['once'])
-                    text = true_[0].format(l_1=answer) + "\n\n"
-                    tts = true_[1].format(l_1=answer) + "sil <[400]>"
+                    text = true_[0].format(l_1=letter_text) + "\n\n"
+                    tts = true_[1].format(l_1=letter_tts) + "sil <[400]>"
             else:
-                answer = self.user["vocabulary_words"]['previous_test_list'][0]
-                mode_ = self.user["vocabulary_words"]['previous_test_list'][1]
+                answer = self.user["vocabulary_words"]['previous_test_list'][1][0]
+                mode_ = self.user["vocabulary_words"]['previous_test_list'][1][1]
+
                 if mode_ == 0:
                     logging.info(tokens)
                     if any(word in tokens for word in ["одна", "один", "1", "ван"]):
@@ -947,18 +981,20 @@ class Vocabulary_words():
                             text = true_[0] + "\n\n"
                             tts = true_[1] + "sil <[400]>"
                         else:
+                            letter_text, letter_tts = self.check_letter(answer[:1])
                             loss_ = random.choice(dialogues_info['loss_without_screen']['double']['double'])
-                            text = loss_[0].format(l_1=answer) + "\n\n"
-                            tts = loss_[0].format(l_1=answer) + "sil <[400]>"
+                            text = loss_[0].format(l_1=letter_text) + "\n\n"
+                            tts = loss_[0].format(l_1=letter_tts) + "sil <[400]>"
                     elif any(word in tokens for word in ["две", "два", "2", "ту"]):
                         if len(answer) == 2:
                             true_ = random.choice(dialogues_info['its_true'])
                             text = true_[0] + "\n\n"
                             tts = true_[1] + "sil <[400]>"
                         else:
+                            letter_text, letter_tts = self.check_letter(answer[:1])
                             loss_ = random.choice(dialogues_info['loss_without_screen']['double']["once"])
-                            text = loss_[0].format(l_1=answer) + "\n\n"
-                            tts = loss_[0].format(l_1=answer) + "sil <[400]>"
+                            text = loss_[0].format(l_1=letter_text) + "\n\n"
+                            tts = loss_[0].format(l_1=letter_tts) + "sil <[400]>"
                     else:
                         self.res['response']['text'] = "Одна или две буквы?"
                         self.res['response']['tts'] = "Одн+а +или две б+уквы?"
@@ -966,31 +1002,66 @@ class Vocabulary_words():
                 else:
                     command = command.lower().strip()
                     command = command.translate(str.maketrans('', '', string.punctuation))
-                    if command == answer:
+
+                    if any(word in answer for word in ["ъ", "ь", "ё", "е", "л", "щ", "а", "и"]):
+                        variants = {"ъ": ["твердый знак", "ъ"], "ь": ["мягкий знак", "ь"], "ё": ["е", "ё", "йо"],
+                                    "е": ["е", "ё", "ель"], "л": ["эль", "эл", "л"],
+                                    "щ": ["ще", "ща", "щ", "щи", "че"],
+                                    "а": ["да", "а"], "и": ["ип", "и"]}
+                        list_answer = variants[answer]
+                    else:
+                        list_answer = [answer]
+
+                    if command in list_answer:
                         true_ = random.choice(dialogues_info['its_true'])
                         text = true_[0] + "\n\n"
                         tts = true_[1] + "sil <[400]>"
-                    else:
+                    elif (not (command in list_answer)) and (
+                            len(command) == 1 or any(len(answ.split()) == 2 for answ in list_answer)):
+                        if len(answer) == 2:
+                            letter_text, letter_tts = self.check_letter(answer[:1])
+                        else:
+                            letter_text, letter_tts = self.check_letter(answer)
                         loss_ = random.choice(dialogues_info['loss_without_screen']['once'])
-                        text = loss_[0].format(l_1=answer) + "\n\n"
-                        tts = loss_[1].format(l_1=answer) + "sil <[400]>"
+                        text = loss_[0].format(l_1=letter_text) + "\n\n"
+                        tts = loss_[1].format(l_1=letter_tts) + "sil <[400]>"
+                    else:
+                        self.res['response']['text'] = "Назови только букву"
+                        self.res['response']['tts'] = "Назов+и т+олько б+укву"
+                        return self.res
         if word[-1] == 0:
             if len(random_letter[0]) == 1:
-                self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=random_letter[0])
-                self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=random_letter[0])
+                letter_text, letter_tts = self.check_letter(random_letter[0])
+                self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=letter_text)
+                self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=letter_tts)
             else:
-                self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=random_letter[1])
-                self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=random_letter[1])
+                letter_text, letter_tts = self.check_letter(random_letter[1])
+                self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=letter_text)
+                self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=letter_tts)
+            tts_previous = "В слове {word} пишется две буквы sil <[300]> {l_1} sil <[200]> или одна?".format(
+                word=word[1], l_1=letter_tts)
         else:
-            self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=random_letter[0],
-                                                                 l_2=random_letter[1])
-            self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=random_letter[0], l_2=random_letter[1])
-        self.user["vocabulary_words"]['previous_test_list'] = [word[-3], word[-1]]
-        logging.info(self.user["vocabulary_words"]['previous_test_list'])
+            letter_text_0, letter_tts_0 = self.check_letter(random_letter[0])
+            letter_text_1, letter_tts_1 = self.check_letter(random_letter[1])
+            self.res['response']['text'] = text + temp[0].format(word=word[2], l_1=letter_text_0,
+                                                                 l_2=letter_text_1)
+            self.res['response']['tts'] = tts + temp[0].format(word=word[1], l_1=letter_tts_0, l_2=letter_tts_1)
+            tts_previous = "В слове {word} пишется буква sil <[300]> {l_1} sil <[300]> или sil <[300]> {l_2} ".format(
+                word=word[1], l_1=letter_tts_0,
+                l_2=letter_tts_1)
+        self.user["vocabulary_words"]['previous_test_list'] = [tts_previous, [word[-3], word[-1]]]
 
         return self.res
 
+    def check_letter(self, letter):
+        lett = {'а': "+а", 'б': "бэ", 'в': "вэ", 'г': "гэ", 'д': "дэ", 'е': "+е", 'ё': "ё", 'ж': "жэ", 'з': "зэ",
+                'и': "+и", 'й': "й краткое", 'к': "ка", 'л': "эль", 'м': "эм", 'н': "эн", 'о': "+о", 'п': "пэ",
+                'р': "эр", 'с': "эс", 'т': "тэ", 'у': "у", 'ф': "эф", 'х': "ха", 'ц': "цэ", 'ч': "че", 'ш': "ша",
+                'щ': "ща", 'ъ': "твёрдый знак", 'ы': "ы", 'ь': "мягкий знак", 'э': "э", 'ю': "ю", 'я': "+я"}
+        return letter, lett[letter]
+
     def get_res_without_screen(self):
+
         if len(self.user["vocabulary_words"]['list']) == 0:
             words = data["vocabulary_words"][:]
             random.shuffle(words)
@@ -1001,19 +1072,25 @@ class Vocabulary_words():
         word_text = word[0]
         word_tts = word[1]
         true_letter = word[-3]
+        sil = 50
         if word[-1] == 0:
             if len(word[-3]) == 1:
+
+                letter_text, letter_tts = self.check_letter(true_letter)
                 temp = random.choice(dialogues_info["vocabulary_learn_without_screen"]["0"]['one'])
-                self.res['response']['text'] = temp[0].format(word=word_text, l_=true_letter)
-                self.res['response']['tts'] = temp[1].format(word=word_tts, l_=true_letter)
+                self.res['response']['text'] = temp[0].format(word=word_text, l_=letter_text.upper())
+                self.res['response']['tts'] = temp[1].format(sil=sil, word=word_tts, l_=letter_tts)
             else:
+                letter_text, letter_tts = self.check_letter(true_letter[:1])
+
                 temp = random.choice(dialogues_info["vocabulary_learn_without_screen"]["0"]['two'])
-                self.res['response']['text'] = temp[0].format(word=word_text, l_=true_letter[:1])
-                self.res['response']['tts'] = temp[1].format(word=word_tts, l_=true_letter[:1])
+                self.res['response']['text'] = temp[0].format(word=word_text, l_=letter_text.upper())
+                self.res['response']['tts'] = temp[1].format(sil=sil, word=word_tts, l_=letter_tts)
         else:
+            letter_text, letter_tts = self.check_letter(true_letter)
             temp = random.choice(dialogues_info["vocabulary_learn_without_screen"][str(word[-1])])
-            self.res['response']['text'] = temp[0].format(word=word_text, l_=true_letter)
-            self.res['response']['tts'] = temp[1].format(word=word_tts, l_=true_letter)
+            self.res['response']['text'] = temp[0].format(word=word_text, l_=letter_text.upper())
+            self.res['response']['tts'] = temp[1].format(sil=sil, word=word_tts, l_=letter_tts)
 
         return self.res
 
@@ -1061,7 +1138,7 @@ class Vocabulary_words():
 
                 self.res['response']['text'] = true_[0] + "\n\n" + temp[0].format(word[2]) + "1) " + check_words[
                     0] + " \n2) " + check_words[1]
-                self.res['response']['tts'] = random.choice(dialogues_info["win_sounds"]) + true_[1] + " " + temp[
+                self.res['response']['tts'] = true_[1] + " " + temp[
                     1].format(
                     word[1])
 
