@@ -19,17 +19,22 @@ def main():
     if request.json['request'].get("command"):
         if request.json['request']["command"] != "ping":
             logging.info(
-                str(response['session']["user_id"][:5]) + " : " + str(request.json['request']["command"]) + "||||" +
+                str(response['session']["user_id"][:5]) + " : " + str(
+                    request.json['request']["command"]) + "|{}|".
+                format("new" if request.json['session']['new'] else "old") +
                 str(response['response']['text']))
     else:
         if request.json['request'].get("payload"):
             logging.info(
                 str(response['session']["user_id"][:5]) + " : " + str(
-                    request.json['request']["payload"]["text"]) + "||||" +
+                    request.json['request']["payload"]["text"]) + "|{}|p|".format(
+                    "new" if request.json['session']['new'] else "old") +
                 str(response['response']['text']))
+
         else:
             logging.info(
-                str(response['session']["user_id"][:5]) + " : " + "||||" +
+                str(response['session']["user_id"][:5]) + " : " + "|{}|t|".format(
+                    "new" if request.json['session']['new'] else "old") +
                 str(response['response']['text']))
 
     return json.dumps(response)

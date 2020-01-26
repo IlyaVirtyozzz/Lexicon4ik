@@ -974,7 +974,6 @@ class Vocabulary_words():
                 mode_ = self.user["vocabulary_words"]['previous_test_list'][1][1]
 
                 if mode_ == 0:
-                    logging.info(tokens)
                     if any(word in tokens for word in ["одна", "один", "1", "ван"]):
                         if len(answer) == 1:
                             true_ = random.choice(dialogues_info['its_true'])
@@ -1191,7 +1190,7 @@ class Menu():
                         self.res['response']['text'] = dialogues_info['hello_menu']["new"][0]
                         self.res['response']['tts'] = dialogues_info['hello_menu']["new"][1]
                         self.user['first_help'] = False
-                        logging.info(2)
+
                     else:
                         temp = random.choice(dialogues_info['hello_menu']["old"])
                         self.res['response']['text'] = temp[0]
