@@ -91,7 +91,10 @@ class Main_class():
             self.res['response']['text'], self.res['response']['tts'] = "Для колонок", "Для колонок"
             self.user["screen"] = False
             return
-
+        elif command == "ping":
+            self.res['response']['text'], self.res['response'][
+                'tts'] = "Маму свою попингуй, Чмо", "Маму свою попингуй, Чмо"
+            return
         elif (any(word in tokens for word in ["повторить", "повтори", "повтор"]) or ("еще раз" in command)) and (
                 not self.screen) and not ((self.user["passage_num"] in [4, 2, 5])
                                           and ((self.user["room_num"] == 2))):
@@ -359,6 +362,7 @@ class Main_class():
                 a = self.classes_list[self.user["passage_num"] - 1](self.res, self.req, self.user_id, self.screen)
                 self.res = a.get_menu()
             elif any(word in tokens for word in ["вперёд"]):
+
                 self.user["passage_num"] = 0
                 menu = Menu(self.res, self.req, self.user_id, self.screen, False)
                 self.res = menu.get_res(1)
@@ -370,6 +374,7 @@ class Main_class():
                     "hide": True
                 }]
             elif any(word in tokens for word in ["назад"]):
+
                 self.user["passage_num"] = 0
                 menu = Menu(self.res, self.req, self.user_id, self.screen, False)
                 self.res = menu.get_res(0)
@@ -433,7 +438,7 @@ class Main_class():
             buttons = self.res['response']['buttons'][:]
             buttons.insert(0, {
                 "title": "Оценить навык",
-                "url": "https://dialogs.yandex.ru/store/skills/376e3bb3-prokachaj-leksiko",
+                "url": "https://dialogs.yandex.ru/store/skills/a38f43ee-prokachaj-leksiko",
                 "hide": True
             })
             self.res['response']['buttons'] = buttons
